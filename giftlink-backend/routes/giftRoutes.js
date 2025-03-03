@@ -19,7 +19,7 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-// Get a single gift by ID
+// Get a single gift by ID  OR "/:id" that serves /api/gifts/:id
 router.get('/:id', async (req, res, next) => {
     try {
         const db = await connectToDatabase();
