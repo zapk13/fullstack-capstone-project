@@ -20,7 +20,7 @@ router.get('/', async (req, res, next) => {
 });
 
 // Get a single gift by ID
-router.get('/:id', async (req, res, /next) => {
+router.get('/:id', async (req, res, next) => {
     try {
         const db = await connectToDatabase();
         const collection = db.collection("gifts");
