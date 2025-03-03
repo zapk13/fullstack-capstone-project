@@ -30,6 +30,44 @@ const logger = require('./logger');
 
 app.use(pinoHttp({ logger }));
 
+// Custom route for /api/gifts/search before the main gift routes
+app.get('/api/gifts/search', async (req, res, next) => {
+    try {
+        const db = await connectToDatabase();
+        const collection = db.collection("gifts");
+        
+        // Get search query from request parameters
+        const query = req.query.q || '';
+        const category = req.query.category;
+        const priceMin = req.query.priceMin ? Number(req.query.priceMin) : 0;
+        const priceMax = req.query.priceMax ? Number(req.query.priceMax) : Infinity;
+        
+        // Build MongoDB query
+        const searchCriteria = {};
+        
+        if (query) {
+            searchCriteria.$or = [
+                { name: { $regex: query, $options: 'i' } },
+                { description: { $regex: query, $options: 'i' } }
+            ];
+        }
+        
+        if (category) {
+            searchCriteria.category = category;
+        }
+        
+        searchCriteria.price = { $gte: priceMin, $lte: priceMax };
+        
+        // Execute search query
+        const gifts = await collection.find(searchCriteria).toArray();
+        
+        res.json(gifts);
+    } catch (e) {
+        logger.error('Search operation failed', e);
+        next(e);
+    }
+});
+
 // Use Routes
 app.use('/api/gifts', giftRoutes);
 app.use('/api/auth', authRoutes);
